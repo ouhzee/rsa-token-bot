@@ -1,0 +1,18 @@
+<b>Description</b>
+  Serve mosigma token, hit <code>next</code> button
+  for another token concurrently.
+  Allowed convo only.
+  The code are monospaced, tap to copy
+  for mobile device.
+    
+<b>Usage</b><code>
+ /start           - bumper
+ /token           - explicit token cmd.
+ /help            - this message
+ token            - Send a message 
+                    contains token.
+ next button      - next +60s token
+ @mentionbot ping - check whether
+                    bot alive.</code>
+
+<b><i>***Note: To avoid 17010446 being locked out, you have to wait another minute after pressing next button since it'll generate same token as with /token cmd .</i></b>
