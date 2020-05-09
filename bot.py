@@ -22,7 +22,7 @@ persists = PicklePersistence(filename='out', store_chat_data=True)
 
 updater = Updater(token='624508206:AAHnjG3k116QaM8UW1pRELGwqUWAJ3ukipo', use_context=True)
 dispatcher = updater.dispatcher
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 
 
 # noinspection SpellCheckingInspection
@@ -244,11 +244,11 @@ def add_group(update, context):
 
 add_group_handle = MessageHandler(Filters.status_update.new_chat_members, add_group)
 dispatcher.add_handler(add_group_handle)
+dispatcher.add_handler(CommandHandler('start', start_handler))
+dispatcher.add_handler(CommandHandler('help', help_handler))
 token_handler = CommandHandler('token', token)
 dispatcher.add_handler(token_handler)
 dispatcher.add_handler(MessageHandler(Filters.text, all_message))
-dispatcher.add_handler(CommandHandler('start', start_handler))
-dispatcher.add_handler(CommandHandler('help', help_handler))
 dispatcher.add_handler(CallbackQueryHandler(button))
 # dispatcher.add_handler(MessageHandler(Filters.text, echo))
 updater.start_polling(poll_interval=3.0, clean=True)
