@@ -136,6 +136,7 @@ class Owner(Role):
 /token<code>       - req passcode.</code>
 /registertoken<code> - register/import token to bot.</code>
 /registerchat<code>  - register current chat.</code>
+/listtoken<code>     - list available token</code>
 /listchat<code>      - list of your approved chat.</code>
 /unregtoken<code>  - delete your token.</code>
 /unregchat<code>   - unregister approved chat/group.</code>
@@ -179,6 +180,7 @@ class User(Role):
         Please type / click one of the command below
         
 /token<code>       - req passcode.</code>
+/listtoken<code>     - list available token</code>
 /registertoken<code> - register/import token to bot.</code>
 /registerchat<code>  - register current chat.</code>
 /askadmin<code>     - chat with admin.</code>
