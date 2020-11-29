@@ -92,7 +92,7 @@ def conv_username(update, context):
 def conv_setpin(update, context):
     context.user_data['setpin'] = update.message.text
     listgrup = Role.Role.listToken()
-    reply = "Terakhir bos, pilih team/grup di bawah.\nCopy / sentuh(kalo pake hp auto copied) nama tim dibawah, paste terus kirim. <b>Nama timnya aja, gaperlu</b> <code>|- username namaowner</code>\n"
+    reply = "Terakhir bos, pilih team/grup di bawah.\nCopy / sentuh(kalo pake hp auto copied) nama tim dibawah, paste terus kirim.\n\n<b>Nama timnya aja, gaperlu</b> <code>|- username namaowner</code>\n"
 
     update.message.reply_text(text=f"{reply}{listgrup[1]}\n\n<b>Kalo list diatas gaada, kirimin aja nama tim/dept nya nanti dibuatkan yang baru</b>", parse_mode=ParseMode.HTML)
 
