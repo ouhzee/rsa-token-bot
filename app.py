@@ -92,7 +92,7 @@ def conv_username(update, context):
 def conv_setpin(update, context):
     context.user_data['setpin'] = update.message.text
     listgrup = Role.Role.listToken()
-    reply = "Terakhir bos, pilih team/grup di bawah.\nCopy / sentuh(kalo pake hp auto copied) nama tim dibawah, paste terus kirim. <b>Nama timnya aja, gaperlu <code>|- username namaowner</code>\n"
+    reply = "Terakhir bos, pilih team/grup di bawah.\nCopy / sentuh(kalo pake hp auto copied) nama tim dibawah, paste terus kirim. <b>Nama timnya aja, gaperlu</b> <code>|- username namaowner</code>\n"
 
     update.message.reply_text(text=f"{reply}{listgrup[1]}\n\n<b>Kalo list diatas gaada, kirimin aja nama tim/dept nya nanti dibuatkan yang baru</b>", parse_mode=ParseMode.HTML)
 
@@ -151,7 +151,7 @@ def reqtoken_handler(update, context):
         update.message.reply_text(text=f"Sorry, this chat/group does not belong to any token.\n please register by clicking this /registerchat", parse_mode=ParseMode.HTML)
 
 def about_handler(update, context):
-    teks = "Hi, thankyou for using this bot.\n\nYou can read the tutorial below.\n<a href='https://telegra.ph/RSA-Token-Telegram-Bot-11-29'>Click Here</a> or instant view on phone"
+    teks = "Hi, thankyou for using this bot.\n\nYou can read the tutorial below.\n<a href='https://telegra.ph/RSA-Token-Telegram-Bot-11-29'>Click Here</a> or instant view on phone.\n\n<code>made by ezee with 🐍</code>"
     update.message.reply_text(text=teks, parse_mode=ParseMode.HTML)
 
 
