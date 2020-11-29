@@ -52,7 +52,7 @@ class Role(ABC):
                 passcode = cmd.read()
                 cmd.close
                 print(passcode)
-                return passcode
+                return passcode, username
             else:
                 cmd = os.popen(f"stoken --rcfile=rcfile/.{username} --use-time=+{nexttoken}")
                 passcode = cmd.read()
@@ -235,8 +235,8 @@ class Verify():
         '''
         :param chat_id: chat_id of current user
         '''
-        passcode_waktu = self.currentRole.reqPasscode(tokenid=chat_id, nexttoken=nexttoken)
-        return passcode_waktu
+        passcode_waktu, username = self.currentRole.reqPasscode(tokenid=chat_id, nexttoken=nexttoken)
+        return passcode_waktu, username
 
     def registerToken(self, chat_id: int, chat_name: str, username: str, setpin: int, team_name: int, token=None, sdtid=None):
         self.currentRole.registerToken(chat_id, chat_name, username, setpin, team_name, token, sdtid)

@@ -134,7 +134,7 @@ def listtoken_handler(update, context):
 def reqtoken_handler(update, context):
     chat_id = update.effective_chat.id
     user = Role.Verify(chat_id)
-    passcode = user.reqPasscode(chat_id, nexttoken=None)
+    passcode, username = user.reqPasscode(chat_id, nexttoken=None)
     
     if passcode:
         button = []
@@ -167,7 +167,7 @@ def buttonPressedNext(update, context):
     nexttoken = int(re.findall(r"next(.*)", callbackdata)[0])
     
     user = Role.Verify(chat_id)
-    passcode, waktu = user.reqPasscode(chat_id, nexttoken)
+    passcode, waktu, username = user.reqPasscode(chat_id, nexttoken)
 
     query.edit_message_reply_markup(reply_markup=None)
     query.message.reply_text(text=f"{from_userfirstname} here is your passcode:\n\n<code>{passcode}active until {waktu}</code>", parse_mode=ParseMode.HTML)
