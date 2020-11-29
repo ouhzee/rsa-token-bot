@@ -36,7 +36,7 @@ def importToken(update, context):
     if update.effective_chat.last_name:
         chat_name = re.findall(r"^\S*..", update.effective_chat.first_name + " " + update.effective_chat.last_name)[0]
     else:
-        chat_name = re.findall(r"^\S*..", update.effective_chat.first_name)
+        chat_name = re.findall(r"^\S*..", update.effective_chat.first_name)[0]
     url = context.user_data.get('url')
     sdtid = context.user_data.get('file')
     username = context.user_data.get('username')
@@ -48,7 +48,7 @@ def importToken(update, context):
     #download if sdtid
     if sdtid:
         sdtid.download(f'sdtid/{username}.sdtid')
-
+    print(type(grup))
     user.registerToken(chat_id=chat_id, chat_name=chat_name, username=username, setpin=setpin, team_name=grup, token=url, sdtid=sdtid)
     
     update.message.reply_text(text=f'done, {username} to {grup} imported.\n\n Now you can register your this chat or group chat to your corresponding token.\n')
