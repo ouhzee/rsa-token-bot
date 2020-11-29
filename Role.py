@@ -2,6 +2,9 @@ from abc import abstractclassmethod, ABC
 from telegram import bot
 import os, messageformat
 from dbhelper import Database
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from datetime import datetime, timedelta
+
 
 class Role(ABC):
 
@@ -21,38 +24,79 @@ class Role(ABC):
         db = Database()
         db.connection()
         hasilquery = db.getOwner()
+        print(f'ini hasil query {hasilquery}\n masuk messageformat')
         hasilparsing = messageformat.parsingGetOwner(hasilquery)
+        print(hasilparsing)
         return hasilparsing
 
-    def reqToken(self, tokenid):
+    def reqPasscode(self, tokenid, nexttoken=None):
         '''
         Return passcode->str
         :param tokenid: chat_id of current user
         '''
         db = Database()
         db.connection()
-        fetchtoken = db.getUser(tokenid=tokenid)
-        if not fetchtoken:
-            return False
-        username = messageformat.parsingPasscode(fetchtoken)
-        cmd = os.popen(f"stoken --rcfile=.{username}")
-        passcode = cmd.read()
-        return passcode
+        passcode = None
+        button = []
 
-    def registerToken(self, chat_id: int, chat_name: str, username: str, setpin: int, team_name: int, token=None, sdtid=None):
+        fetchtoken = db.getUser(tokenid=tokenid)
+        if fetchtoken:
+            print("masuk if fetchtoken")
+            username = messageformat.parsingPasscode(fetchtoken)
+            print(f"ini username {username}")
+
+            #condition check callback data button
+            if not nexttoken:
+            
+                cmd = os.popen(f"stoken --rcfile=rcfile/.{username}")
+                passcode = cmd.read()
+                cmd.close
+                print(passcode)
+                return passcode
+            else:
+                cmd = os.popen(f"stoken --rcfile=rcfile/.{username} --use-time=+{nexttoken}")
+                passcode = cmd.read()
+                cmd.close()
+                waktu = (datetime.now() + timedelta(seconds=nexttoken)).strftime("%H:%M:%S")
+                return passcode, waktu
+                
+
+
+        else:
+            print("masuk else fetchtoken")
+            return None
+
+    def registerToken(self, chat_id: int, chat_name: str, username: str, setpin: int, team_name, token=None, sdtid=None):
         db = Database()
         db.connection()
+        #check if this user already have token imported
+        if db.getOwner(chat_id=chat_id):
+            return False
         self.importToken(username, setpin, sdtid, token)
         db.insertOwner(chat_id, chat_name, team_name, username)
         return
 
     def importToken(self, username, setpin, sdtid, token):
+        cmd = None
+        print("masuk importToken")
         if sdtid == None:
-            os.popen(f"stoken import --token={token} --new-password=''")
+            print("masuk if sdtid")
+            print(f"isi dari token = {token}")
+            cmd = os.popen(f"stoken import --token={token} --new-password=''")
+            cmd.close()
+            print('cmd close')
         else:
+            print('masuk else sdtid')
             os.popen(f"stoken import --file=sdtid/{username}.sdtid --new-password=''")
-        os.popen(f"stoken setpin {setpin}")
-        os.popen(f"mv $HOME/.stokenrc rcfile/.{username}")
+            
+        
+        print(f"masuk mv = {username}")
+        cmd = os.popen(f"mv $HOME/.stokenrc rcfile/.{username}")
+        cmd.close()
+        print(f"masuk setpin = {setpin}")
+        cmd = os.popen(f"echo 'pin {setpin}' >> rcfile/.{username}")
+        cmd.close()
+        
 
         return 
 
@@ -88,12 +132,15 @@ class Owner(Role):
     def menu(self)->str:
         teks = """
         Please type / click one of the command below.
-        
-/registertoken<code>  - register/import token to bot.</code>
-/registerchat<code>   - register current chat.</code>
-/listchat<code>       - display list of your approved chat.</code>
-/unregtoken<code>     - unregister/delete your token.</code>
-/unregchat<code>      - unregister your approved chat/group.</code>
+
+/token<code>       - req passcode.</code>
+/registertoken<code> - register/import token to bot.</code>
+/registerchat<code>  - register current chat.</code>
+/listchat<code>      - list of your approved chat.</code>
+/unregtoken<code>  - delete your token.</code>
+/unregchat<code>   - unregister approved chat/group.</code>
+/askadmin<code>     - chat with admin.</code>
+/about<code>    - Tutorial</code>
         
         """
         return teks
@@ -131,8 +178,11 @@ class User(Role):
         teks = """
         Please type / click one of the command below
         
-/registertoken<code>  - Import token to bot.</code>
-/registerchat<code>   - Register current chat/group.</code>
+/token<code>       - req passcode.</code>
+/registertoken<code> - register/import token to bot.</code>
+/registerchat<code>  - register current chat.</code>
+/askadmin<code>     - chat with admin.</code>
+/about<code>    - Tutorial</code>
         """
         return teks
 
@@ -179,24 +229,26 @@ class Verify():
         hasil = self.currentRole.listToken()
         return hasil
 
-    def reqPasscode(self, chat_id):
+    def reqPasscode(self, chat_id, nexttoken):
         '''
         :param chat_id: chat_id of current user
         '''
-        self.currentRole.reqPasscode(chat_id)
+        passcode_waktu = self.currentRole.reqPasscode(tokenid=chat_id, nexttoken=nexttoken)
+        return passcode_waktu
 
-    def registerToken(self, chat_id: int, chat_name: str, username: str, setpin: int, team_id: int, token=None, sdtid=None):
-        self.currentRole.registerToken()
+    def registerToken(self, chat_id: int, chat_name: str, username: str, setpin: int, team_name: int, token=None, sdtid=None):
+        self.currentRole.registerToken(chat_id, chat_name, username, setpin, team_name, token, sdtid)
 
     def registerChat(self, chat_id, chat_name, token):
         self.currentRole.registerChat(chat_id, chat_name, token)
+
 
     ###Owner###
     def listChat(self, chat_id):
         '''
         chat_id of owner
         '''
-        self.currentRole.listChat(chat_id)
+        return self.currentRole.listChat(chat_id)
 
     def unregToken(self, chat_id):
         self.currentRole.unregToken(chat_id)

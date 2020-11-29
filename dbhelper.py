@@ -1,5 +1,6 @@
 import sqlite3
 
+
 class Database:
     
     def __init__(self):
@@ -15,10 +16,14 @@ class Database:
             print(err)
 
     def getTeam(self, team_name):
-        query = '''select team_name from "team"'''
+        """
+        Check if team_name exists
+        """
+        query = '''select team_name from "team" where team_name = ?'''
         cur = self.connect.cursor()
+        cur.execute(query, (team_name,))
 
-        return cur.execute(query, (team_name,))
+        return cur.fetchall()
 
 
     def insertTeam(self, team_name, team_desc):
@@ -46,16 +51,17 @@ class Database:
         :param team_name:
         :param token:
         """
-        query = '''insert into "owner"(chat_id, chat_name, team_name, token) values(?, ?, ?, ?)'''
+        query = '''insert into "owner"(chat_id, chat_name, team_name, team_desc, token) values(?, ?, ?, (select "team_desc" from "team" where "team_name" = ?), ?)'''
+        #insert into "owner"(chat_id, chat_name, team_name, team_desc, token) values(444, "rozi", "mosigma", (select "team_desc" from "team" where "team_name" = "mosigma"), 777)
         #check if team_name exist
         team_desc = team_name
         teamname = team_name.lower().replace(" ", "")
         check = self.getTeam(teamname)
-        if check:
+        if not check:
             self.insertTeam(teamname, team_desc)
 
         cur = self.connect.cursor()
-        cur.execute(query, (chat_id, chat_name, teamname, token))
+        cur.execute(query, (chat_id, chat_name, teamname, teamname, token))
         self.connect.commit()
         return
 
@@ -117,7 +123,7 @@ class Database:
             self.connect.commit()
         except KeyError:
             query ='''delete from "owner" where chat_id = ?'''
-            self.connect.execute(query, (kwargs.get('chat_id')))
+            self.connect.execute(query, (kwargs.get('chat_id'),))
             self.connect.commit()
 
     def delUser(self, chat_id):
@@ -150,6 +156,7 @@ class Database:
             kwargs['chat_id']
             query = '''select chat_id from "owner" where chat_id = ?'''
             cur.execute(query, (kwargs.get('chat_id'),))
+            
         except KeyError:
             cur.execute('''select token, chat_name, team_desc from "owner"''')
         return cur.fetchall()
