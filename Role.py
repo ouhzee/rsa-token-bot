@@ -113,7 +113,7 @@ class Role(ABC):
 class Admin(Role):
     def menu(self)->str:
         teks = """
-        Please type / click one of the command below.
+        Please click one of the command below.
         <code>
         /registertoken  - register/import token to bot.
         /registerchat   - register current chat/group to available token.
@@ -131,7 +131,7 @@ class Admin(Role):
 class Owner(Role):
     def menu(self)->str:
         teks = """
-        Please type / click one of the command below.
+        Please type click one of the command below.
 
 /token<code>       - req passcode.</code>
 /registertoken<code> - register/import token to bot.</code>
@@ -177,7 +177,7 @@ class Owner(Role):
 class User(Role):
     def menu(self)->str:
         teks = """
-        Please type / click one of the command below
+        Please click one of the command below
         
 /token<code>       - req passcode.</code>
 /listtoken<code>     - list available token</code>
