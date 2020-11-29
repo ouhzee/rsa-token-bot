@@ -33,7 +33,10 @@ def downloadFile(update, context):
 
 def importToken(update, context):
     chat_id = update.effective_message.chat_id
-    chat_name = re.findall(r"^\S*..", update.effective_chat.first_name + " " + update.effective_chat.last_name)[0]
+    if update.effective_chat.last_name:
+        chat_name = re.findall(r"^\S*..", update.effective_chat.first_name + " " + update.effective_chat.last_name)[0]
+    else:
+        chat_name = re.findall(r"^\S*..", update.effective_chat.first_name)
     url = context.user_data.get('url')
     sdtid = context.user_data.get('file')
     username = context.user_data.get('username')
