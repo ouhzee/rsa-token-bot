@@ -149,7 +149,7 @@ def reqtoken_handler(update, context):
                 )
         buttonmarkup = InlineKeyboardMarkup(messageformat.buildButton(button, 2))
 
-        update.message.reply_text(text=f"Here is the passcode <code>{passcode}</code>", parse_mode=ParseMode.HTML, reply_markup=buttonmarkup)
+        update.message.reply_text(text=f"<code>username: {username}</code>\nHere is the passcode <code>{passcode}</code>", parse_mode=ParseMode.HTML, reply_markup=buttonmarkup)
     else:
         update.message.reply_text(text=f"Sorry, this chat/group does not belong to any token.\n please register by clicking this /registerchat", parse_mode=ParseMode.HTML)
 
@@ -170,7 +170,7 @@ def buttonPressedNext(update, context):
     passcode, waktu, username = user.reqPasscode(chat_id, nexttoken)
 
     query.edit_message_reply_markup(reply_markup=None)
-    query.message.reply_text(text=f"{from_userfirstname} here is your passcode:\n\n<code>{passcode}active until {waktu}</code>", parse_mode=ParseMode.HTML)
+    query.message.reply_text(text=f"<code>username: {username}</code>\n{from_userfirstname} here is your passcode:\n\n<code>{passcode}active until {waktu}</code>", parse_mode=ParseMode.HTML)
 
 def buttonPressedUser(update, context):
     query = update.callback_query
