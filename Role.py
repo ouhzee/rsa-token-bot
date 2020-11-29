@@ -58,7 +58,7 @@ class Role(ABC):
                 passcode = cmd.read()
                 cmd.close()
                 waktu = (datetime.now() + timedelta(seconds=nexttoken)).strftime("%H:%M:%S")
-                return passcode, waktu
+                return passcode, waktu, username
                 
 
 
@@ -235,8 +235,8 @@ class Verify():
         '''
         :param chat_id: chat_id of current user
         '''
-        passcode_waktu, username = self.currentRole.reqPasscode(tokenid=chat_id, nexttoken=nexttoken)
-        return passcode_waktu, username
+        passcode = self.currentRole.reqPasscode(tokenid=chat_id, nexttoken=nexttoken)
+        return passcode
 
     def registerToken(self, chat_id: int, chat_name: str, username: str, setpin: int, team_name: int, token=None, sdtid=None):
         self.currentRole.registerToken(chat_id, chat_name, username, setpin, team_name, token, sdtid)
