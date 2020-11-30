@@ -57,7 +57,7 @@ def importToken(update, context):
 
 def conv_token(update, context):
     
-    reply = "Great, now please provide username that'll be used to login with this token (not telegram username).\n\n<b>Please don't contain any spaces.</b>"
+    reply = "Great, now please provide username that'll be used to login with this token (not telegram username).\n\n<b>Please don't contain any spaces.</b>\n\n Click /cancel to cancel"
     
 
     #check if sdtid is sent
@@ -87,7 +87,7 @@ def conv_token(update, context):
 def conv_username(update, context):
     
     context.user_data['username'] = update.message.text
-    reply = "Okay, next one is pin of your token.\n\n<b>Remember, don't contain any spaces.</b>"
+    reply = "Okay, next one is pin of your token.\n\n<b>Remember, don't contain any spaces.</b>\n\n Click /cancel to cancel"
 
     update.message.reply_text(text=f"{reply}", parse_mode=ParseMode.HTML)
     return SETPIN
@@ -97,7 +97,7 @@ def conv_setpin(update, context):
     listgrup = Role.Role.listToken()
     reply = "Terakhir bos, pilih team/grup di bawah.\nCopy / sentuh(kalo pake hp auto copied) nama tim dibawah, paste terus kirim.\n\n<b>Nama timnya aja, gaperlu</b> <code>|- username namaowner</code>\n"
 
-    update.message.reply_text(text=f"{reply}{listgrup[1]}\n\n<b>Kalo list diatas gaada, kirimin aja nama tim/dept nya nanti dibuatkan yang baru</b>", parse_mode=ParseMode.HTML)
+    update.message.reply_text(text=f"{reply}{listgrup[1]}\n\n<b>Kalo list diatas gaada, kirimin aja nama tim/dept nya nanti dibuatkan yang baru</b>\n\n Click /cancel to cancel", parse_mode=ParseMode.HTML)
 
     return GRUP
 
@@ -262,7 +262,7 @@ def registertoken_handler(update, context):
             update.message.reply_text(text=f"You have already imported your token.\n\nIf you want to change it, please unregister first then register it again", parse_mode=ParseMode.HTML)
             return ConversationHandler.END
         else:
-            update.message.reply_text(text=f"Hi, Please send me your <b>.sdtid</b> file\n\nor url token that look like this \n<code>http://127.0.0.1/securidxxxxx</code>", parse_mode=ParseMode.HTML)
+            update.message.reply_text(text=f"Hi, Please send me your <b>.sdtid</b> file\n\nor url token that look like this \n<code>http://127.0.0.1/securidxxxxx</code>\n\n Click /cancel to cancel", parse_mode=ParseMode.HTML)
             return TOKEN
 
 
@@ -358,11 +358,11 @@ def main()->None:
     conv_handler = ConversationHandler(
                 entry_points=[CommandHandler('registertoken', registertoken_handler)],
                 states={
-                    TOKEN: [MessageHandler(Filters.document | Filters.text | ~Filters.command, callback=conv_token)],
-                    USERNAME: [MessageHandler(Filters.text | ~Filters.command, callback=conv_username)],
-                    SETPIN: [MessageHandler(Filters.text | ~Filters.command, callback=conv_setpin)],
-                    GRUP: [MessageHandler(Filters.text | ~Filters.command, callback=conv_grup)],
-                    IMPORTTOKEN: [MessageHandler(Filters.text | ~Filters.command, callback=importToken)]
+                    TOKEN: [MessageHandler(Filters.document | Filters.text & ~Filters.command, callback=conv_token)],
+                    USERNAME: [MessageHandler(Filters.text & ~Filters.command, callback=conv_username)],
+                    SETPIN: [MessageHandler(Filters.text & ~Filters.command, callback=conv_setpin)],
+                    GRUP: [MessageHandler(Filters.text & ~Filters.command, callback=conv_grup)],
+                    IMPORTTOKEN: [MessageHandler(Filters.text & ~Filters.command, callback=importToken)]
                 },
                 fallbacks=[CommandHandler('cancel', callback=conv_cancel)]
             )
