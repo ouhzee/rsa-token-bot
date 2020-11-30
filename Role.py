@@ -133,7 +133,7 @@ class Owner(Role):
         teks = """
         Please type click one of the command below.
 
-/token<code><code>       - req passcode.</code>
+/token<code>       - req passcode.</code>
 /registertoken<code> - register/import token to bot.</code>
 /registerchat<code>  - register current chat.</code>
 /listtoken<code>     - list available token</code>
@@ -180,7 +180,7 @@ class User(Role):
         teks = """
         Please click one of the command below
         
-/token<code><code>       - req passcode.</code>
+/token<code>       - req passcode.</code>
 /registertoken<code> - register/import token to bot.</code>
 /registerchat<code>  - register current chat.</code>
 /listtoken<code>     - list available token</code>
