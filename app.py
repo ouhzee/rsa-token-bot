@@ -134,9 +134,11 @@ def listtoken_handler(update, context):
 def reqtoken_handler(update, context):
     chat_id = update.effective_chat.id
     user = Role.Verify(chat_id)
-    passcode, username = user.reqPasscode(chat_id, nexttoken=None)
+    hasilpasscode = user.reqPasscode(chat_id, nexttoken=None)
     
-    if passcode:
+    if hasilpasscode:
+        passcode = hasilpasscode[0]
+        username = hasilpasscode[1]
         button = []
         #create dict for button
         buttondict = {'next60': 'next 60s', 'next3600': 'next 1h', 'next7200': 'next 2h', 'next14400': 'next 4h'}
