@@ -358,11 +358,11 @@ def main()->None:
     conv_handler = ConversationHandler(
                 entry_points=[CommandHandler('registertoken', registertoken_handler)],
                 states={
-                    TOKEN: [MessageHandler(Filters.document | Filters.text, callback=conv_token)],
-                    USERNAME: [MessageHandler(Filters.text, callback=conv_username)],
-                    SETPIN: [MessageHandler(Filters.text, callback=conv_setpin)],
-                    GRUP: [MessageHandler(Filters.text, callback=conv_grup)],
-                    IMPORTTOKEN: [MessageHandler(Filters.text, callback=importToken)]
+                    TOKEN: [MessageHandler(Filters.document | Filters.text | ~Filters.command, callback=conv_token)],
+                    USERNAME: [MessageHandler(Filters.text | ~Filters.command, callback=conv_username)],
+                    SETPIN: [MessageHandler(Filters.text | ~Filters.command, callback=conv_setpin)],
+                    GRUP: [MessageHandler(Filters.text | ~Filters.command, callback=conv_grup)],
+                    IMPORTTOKEN: [MessageHandler(Filters.text | ~Filters.command, callback=importToken)]
                 },
                 fallbacks=[CommandHandler('cancel', callback=conv_cancel)]
             )

@@ -114,91 +114,158 @@ Press Ctrl-C on the command line or send a signal to the process to stop the
 bot.
 """
 
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# pylint: disable=W0613, C0116
+# type: ignore[union-attr]
+# This program is dedicated to the public domain under the CC0 license.
+
+"""
+First, a few callback functions are defined. Then, those functions are passed to
+the Dispatcher and registered at their respective places.
+Then, the bot is started and runs until we press Ctrl-C on the command line.
+Usage:
+Example of a bot-user conversation using ConversationHandler.
+Send /start to initiate the conversation.
+Press Ctrl-C on the command line or send a signal to the process to stop the
+bot.
+"""
+
 import logging
 
-from telegram import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, Update
-from telegram.ext import Updater, CommandHandler, Filters, CallbackContext
+from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
+from telegram.ext import (
+    Updater,
+    CommandHandler,
+    MessageHandler,
+    Filters,
+    ConversationHandler,
+    CallbackContext,
+)
 
 # Enable logging
-from telegram.utils import helpers
-
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG
 )
 
 logger = logging.getLogger(__name__)
 
-# Define constants that will allow us to reuse the deep-linking parameters.
-CHECK_THIS_OUT = 'check-this-out'
-USING_ENTITIES = 'using-entities-here'
-SO_COOL = 'so-cool'
+GENDER, PHOTO, LOCATION, BIO = range(4)
 
 
-def start(update: Update, context: CallbackContext) -> None:
-    """Send a deep-linked URL when the command /start is issued."""
-    bot = context.bot
-    url = helpers.create_deep_linked_url(bot.get_me().username, CHECK_THIS_OUT, group=True)
-    keyboard = InlineKeyboardMarkup.from_button(
-        InlineKeyboardButton(text='Continue here!', url=url)
-    )
-    text = "Feel free to tell your friends about it:\n\n" + url
-    update.message.reply_text(text=text, reply_markup=keyboard)
+def start(update: Update, context: CallbackContext) -> int:
+    reply_keyboard = [['Boy', 'Girl', 'Other']]
 
-
-def deep_linked_level_1(update: Update, context: CallbackContext) -> None:
-    """Reached through the CHECK_THIS_OUT payload"""
-    bot = context.bot
-    url = helpers.create_deep_linked_url(bot.get_me().username, SO_COOL)
-    text = (
-        "Awesome, you just accessed hidden functionality! "
-        " Now let's get back to the private chat."
-    )
-    keyboard = InlineKeyboardMarkup.from_button(
-        InlineKeyboardButton(text='Continue here!', url=url)
-    )
-    update.message.reply_text(text, reply_markup=keyboard)
-
-
-def deep_linked_level_2(update: Update, context: CallbackContext) -> None:
-    """Reached through the SO_COOL payload"""
-    bot = context.bot
-    url = helpers.create_deep_linked_url(bot.get_me().username, USING_ENTITIES)
-    text = f"You can also mask the deep-linked URLs as links: [▶️ CLICK HERE]({url})."
-    update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
-
-
-def deep_linked_level_3(update: Update, context: CallbackContext) -> None:
-    """Reached through the USING_ENTITIES payload"""
-    payload = context.args
     update.message.reply_text(
-        f"Congratulations! This is as deep as it gets 👏🏻\n\nThe payload was: {payload}"
+        'Hi! My name is Professor Bot. I will hold a conversation with you. '
+        'Send /cancel to stop talking to me.\n\n'
+        'Are you a boy or a girl?',
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True),
     )
 
+    return GENDER
 
-def main():
-    """Start the bot."""
+
+def gender(update: Update, context: CallbackContext) -> int:
+    user = update.message.from_user
+    logger.info("Gender of %s: %s", user.first_name, update.message.text)
+    update.message.reply_text(
+        'I see! Please send me a photo of yourself, '
+        'so I know what you look like, or send /skip if you don\'t want to.',
+        reply_markup=ReplyKeyboardRemove(),
+    )
+
+    return PHOTO
+
+
+def photo(update: Update, context: CallbackContext) -> int:
+    user = update.message.from_user
+    photo_file = update.message.photo[-1].get_file()
+    photo_file.download('user_photo.jpg')
+    logger.info("Photo of %s: %s", user.first_name, 'user_photo.jpg')
+    update.message.reply_text(
+        'Gorgeous! Now, send me your location please, ' 'or send /skip if you don\'t want to.'
+    )
+
+    return LOCATION
+
+
+def skip_photo(update: Update, context: CallbackContext) -> int:
+    user = update.message.from_user
+    logger.info("User %s did not send a photo.", user.first_name)
+    update.message.reply_text(
+        'I bet you look great! Now, send me your location please, ' 'or send /skip.'
+    )
+
+    return LOCATION
+
+
+def location(update: Update, context: CallbackContext) -> int:
+    user = update.message.from_user
+    user_location = update.message.location
+    logger.info(
+        "Location of %s: %f / %f", user.first_name, user_location.latitude, user_location.longitude
+    )
+    update.message.reply_text(
+        'Maybe I can visit you sometime! ' 'At last, tell me something about yourself.'
+    )
+
+    return BIO
+
+
+def skip_location(update: Update, context: CallbackContext) -> int:
+    user = update.message.from_user
+    logger.info("User %s did not send a location.", user.first_name)
+    update.message.reply_text(
+        'You seem a bit paranoid! ' 'At last, tell me something about yourself.'
+    )
+
+    return BIO
+
+
+def bio(update: Update, context: CallbackContext) -> int:
+    user = update.message.from_user
+    logger.info("Bio of %s: %s", user.first_name, update.message.text)
+    update.message.reply_text('Thank you! I hope we can talk again some day.')
+
+    return ConversationHandler.END
+
+
+def cancel(update: Update, context: CallbackContext) -> int:
+    user = update.message.from_user
+    logger.info("User %s canceled the conversation.", user.first_name)
+    update.message.reply_text(
+        'Bye! I hope we can talk again some day.', reply_markup=ReplyKeyboardRemove()
+    )
+
+    return ConversationHandler.END
+
+
+def main() -> None:
     # Create the Updater and pass it your bot's token.
+    # Make sure to set use_context=True to use the new context based callbacks
+    # Post version 12 this will no longer be necessary
     updater = Updater("1081827561:AAHdTmkPfJOP6HAeDuIZYwwUtVA4deVnMgw", use_context=True)
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
 
-    # More info on what deep linking actually is (read this first if it's unclear to you):
-    # https://core.telegram.org/bots#deep-linking
-
-    # Register a deep-linking handler
-    
-
-    # This one works with a textual link instead of an URL
-    dispatcher.add_handler(CommandHandler("start", deep_linked_level_2, Filters.regex(SO_COOL)))
-
-    # We can also pass on the deep-linking payload
-    dispatcher.add_handler(
-        CommandHandler("start", deep_linked_level_3, Filters.regex(USING_ENTITIES), pass_args=True)
+    # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('start', start)],
+        states={
+            GENDER: [MessageHandler(Filters.regex('^(Boy|Girl|Other)$'), gender)],
+            PHOTO: [MessageHandler(Filters.photo, photo), CommandHandler('skip', skip_photo)],
+            LOCATION: [
+                MessageHandler(Filters.location, location),
+                CommandHandler('skip', skip_location),
+            ],
+            BIO: [MessageHandler(Filters.text & ~Filters.command, bio)],
+        },
+        fallbacks=[CommandHandler('cancel', cancel)],
     )
 
-    # Make sure the deep-linking handlers occur *before* the normal /start handler.
-    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(conv_handler)
 
     # Start the Bot
     updater.start_polling()
