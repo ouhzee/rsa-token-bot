@@ -133,15 +133,16 @@ class Owner(Role):
         teks = """
         Please type click one of the command below.
 
-/token<code>       - req passcode.</code>
+/token<code><code>       - req passcode.</code>
 /registertoken<code> - register/import token to bot.</code>
 /registerchat<code>  - register current chat.</code>
 /listtoken<code>     - list available token</code>
 /listchat<code>      - list of your approved chat.</code>
 /unregtoken<code>  - delete your token.</code>
 /unregchat<code>   - unregister approved chat/group.</code>
-/askadmin<code>     - chat with admin.</code>
-/about<code>    - Tutorial</code>
+
+/askadmin<code>    - chat with admin.</code>
+/about<code>       - Tutorial</code>
         
         """
         return teks
@@ -179,12 +180,13 @@ class User(Role):
         teks = """
         Please click one of the command below
         
-/token<code>       - req passcode.</code>
-/listtoken<code>     - list available token</code>
+/token<code><code>       - req passcode.</code>
 /registertoken<code> - register/import token to bot.</code>
 /registerchat<code>  - register current chat.</code>
-/askadmin<code>     - chat with admin.</code>
-/about<code>    - Tutorial</code>
+/listtoken<code>     - list available token</code>
+
+/askadmin<code>    - chat with admin.</code>
+/about<code>       - Tutorial</code>
         """
         return teks
 
