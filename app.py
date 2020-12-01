@@ -156,7 +156,7 @@ def reqtoken_handler(update, context):
         update.message.reply_text(text=f"Sorry, this chat/group does not belong to any token.\n please register by clicking this /registerchat", parse_mode=ParseMode.HTML)
 
 def about_handler(update, context):
-    teks = "Hi, thankyou for using this bot.\n\nYou can read the tutorial below.\n<a href='https://telegra.ph/RSA-Token-Telegram-Bot-11-29'>Click Here</a> or instant view on the phone.\nTanya2 pake /askadmin.\nCmd yg gaada di list pojok, pake /start\n\n<code>made by ezee with 🐍</code>"
+    teks = "Hi, thankyou for using this bot.\n\nYou can read the tutorial below.\n<a href='https://telegra.ph/RSA-Token-Telegram-Bot-11-29'>Click Here</a> or instant view on the phone.\n\nTanya2 pake /askadmin.\nList cmd yg gaada di pojok, pake /start\n\n<code>made by ezee with 🐍</code>"
     update.message.reply_text(text=teks, parse_mode=ParseMode.HTML)
 
 
@@ -291,7 +291,7 @@ def buttonPressedNotify(update, context):
     update.callback_query.message.reply_text(text="Admin has been notified, please wait")
 
 def addgroup_handler(update, context):
-    if update.message.new_chat_member[0].id == context.bot.get_me.id:
+    if update.message.new_chat_members[0].id == context.bot.get_me.id:
         update.message.reply_text(text=f"Hi, thankyou for adding me to your group.\n\nThere are three basic cmd, you can access it by clicking forwardslash(/) next to emoji icon below")
 
 ###DEBUG###
