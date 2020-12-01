@@ -181,7 +181,10 @@ def buttonPressedUser(update, context):
     callbackdata = query.data
     from_user = query.from_user.username
     chat_title = query.message.chat.title
-    from_requestor = query.from_user.first_name + " " + query.from_user.last_name
+    if query.from_user.last_name:
+        from_requestor = query.from_user.first_name + " " + query.from_user.last_name
+    else:
+        from_requestor = query.from_user.first_name
     print('didalam buttonPressedUser method')
     query.answer()
     
