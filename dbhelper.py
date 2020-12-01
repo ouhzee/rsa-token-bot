@@ -79,9 +79,10 @@ class Database:
             print(f"insertuser ini to_owner {to_owner}")
             self.connect.commit()
         except sqlite3.Error as e:
-            print("insert uesr gagal ini error nya")
             print(e)
-            return 1
+            query = '''update "user" set to_owner = ?, token = (select token from "owner" where chat_id = ?) where chat_id = ?'''
+            cur.execute(query, (to_owner, to_owner, chat_id))
+            self.connect.commit()
 
     def updateTeam(self, team_name, team_desc):
         query = '''update "team" set team_name = ?,team_desc = ? where team_id = ?'''
