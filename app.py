@@ -285,10 +285,16 @@ def buttonPressedNotify(update, context):
     name = update.callback_query.from_user.first_name
     username = update.callback_query.from_user.username
     chat_title = update.callback_query.message.chat.title
-
-    context.bot.send_message(chat_id=166942761 ,text=f'Manggil bos\nGroup: {chat_title}\nFrom: {name} @{username}.')
-    update.callback_query.edit_message_reply_markup(reply_markup=None)
-    update.callback_query.message.reply_text(text="Admin has been notified, please wait")
+    if update.effective_chat.type != 'private':
+        url = helpers.create_deep_linked_url(context.bot.get_me().username)
+        buttonmarkup = InlineKeyboardMarkup.from_button(InlineKeyboardButton(text="Start chat", url=url))
+        context.bot.send_message(chat_id=166942761 ,text=f'Manggil bos\nGroup: {chat_title}\nFrom: {name} @{username}.')
+        update.callback_query.edit_message_reply_markup(reply_markup=None)
+        update.callback_query.message.reply_text(text="Admin has been notified, please wait.\n\nPlease issue /start on the button below to initiate conversation with admin.\nIf you have done this before, it's not necessary.", reply_markup=buttonmarkup)
+    else:
+        context.bot.send_message(chat_id=166942761 ,text=f'Manggil bos\nGroup: {chat_title}\nFrom: {name} @{username}.')
+        update.callback_query.edit_message_reply_markup(reply_markup=None)
+        update.callback_query.message.reply_text(text="Admin has been notified, please wait.")
 
 def addgroup_handler(update, context):
     if update.message.new_chat_members[0].id == context.bot.get_me.id:
