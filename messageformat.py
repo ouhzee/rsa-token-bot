@@ -14,7 +14,7 @@ def parsingList(hasilquery):
     tokendict = {}
     teks = ""
     buttonlistchat = []
-    #convert hasilquery from [(token, chat_id, nama_chat), (token, chat_id, nama_chat) to of dict {'token': {'chat_id': 'user', 'chat_id': 'user'}}
+    #convert hasilquery from [(token, chat_id, nama_chat), (token, chat_id, nama_chat) to dict {'token': {'chat_id': 'user', 'chat_id': 'user'}}
     for i in hasilquery:
         if i[0] not in tokendict:
             tokendict[i[0]] = {}
@@ -24,6 +24,7 @@ def parsingList(hasilquery):
     
     # parsing tokendict and create Main Menu button
     print(f"isi dari tokendict {tokendict}")
+
     for token, chat in tokendict.items():
         teks += f"\n<code>- {token}</code>"
 
@@ -31,6 +32,7 @@ def parsingList(hasilquery):
             teks += f"\n<code>   |- {user}</code>"
             buttonlistchat.append(InlineKeyboardButton(text=f"{user}", callback_data=f"unregchat{chat_id}"))
         teks += "\n"
+
     """for token in tokendict:
         teks += f"\n- {token}"
                

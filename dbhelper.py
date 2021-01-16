@@ -131,9 +131,15 @@ class Database:
             self.connect.commit()
 
     def delUser(self, chat_id):
-        query = '''delete from "user" where chat_id = ?'''
-        self.connect.ececute(query, (chat_id,))
-        return
+        try:
+            query = '''delete from "user" where chat_id = ?'''
+            self.connect.ececute(query, (chat_id,))
+            return
+        except sqlite3.Error as e:
+            print(e)
+            return False
+
+        
 
     def getUser(self, **kwargs):
         '''

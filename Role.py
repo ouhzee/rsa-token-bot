@@ -172,7 +172,7 @@ class Owner(Role):
         db = Database()
         db.connection()
         db.delUser(chat_id=chat_id)
-        return
+        
 
 
 class User(Role):
@@ -184,11 +184,21 @@ class User(Role):
 /registertoken<code> - register/import token to bot.</code>
 /registerchat<code>  - register current chat/group.</code>
 /listtoken<code>     - list available token</code>
+/unregchat<code>     - unreg this chat from token.</code>
 
 /askadmin<code>    - chat with admin.</code>
 /about<code>       - Tutorial</code>
         """
         return teks
+
+    def unregChat(self, chat_id):
+        db = Database()
+        db.connection()
+        ##Check if user registered to db##
+        if db.delUser(chat_id=chat_id):
+            return
+        else:
+            return False
 
     def tesaja(self):
         db = Database()
@@ -246,6 +256,10 @@ class Verify():
     def registerChat(self, chat_id, chat_name, token):
         self.currentRole.registerChat(chat_id, chat_name, token)
 
+    ###USER and OWNER###
+    def unregChat(self, chat_id: int):
+        self.currentRole.unregChat(chat_id)
+
 
     ###Owner###
     def listChat(self, chat_id):
@@ -256,9 +270,6 @@ class Verify():
 
     def unregToken(self, chat_id):
         self.currentRole.unregToken(chat_id)
-
-    def unregChat(self, chat_id:int):
-        self.currentRole.unregChat(chat_id)
 
     ###ADMIN###
     def removeToken(self, chat_id):

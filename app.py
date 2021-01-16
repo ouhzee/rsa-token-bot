@@ -2,7 +2,8 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, ChatAct
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, CallbackContext, ConversationHandler
 from telegram.utils import helpers
 from functools import wraps
-import Role, messageformat, logging, re, dbhelper
+import Role, messageformat, logging, re, dbhelper, configparser
+
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 
@@ -65,6 +66,7 @@ def conv_token(update, context):
 
         document = update.message.document
         print(update.message.document.mime_type)
+        
         if document.mime_type == 'application/xml' and re.match(r".*sdtid",document.file_name):
 
             context.user_data['file'] = context.bot.getFile(update.message.document.file_id)
@@ -297,7 +299,7 @@ def buttonPressedNotify(update, context):
         update.callback_query.message.reply_text(text="Admin has been notified, please wait.")
 
 def addgroup_handler(update, context):
-    if update.message.new_chat_members[0].id == context.bot.get_me.id:
+    if update.message.new_chat_members[0].id == context.bot.get_me().id:
         update.message.reply_text(text=f"Hi, thankyou for adding me to your group.\n\nThere are three basic cmd, you can access it by clicking forwardslash(/) next to emoji icon below")
 
 ###DEBUG###
@@ -319,9 +321,13 @@ def listchat_handler(update, context):
 def unregchat_handler(update,context):
     chat_id = update.effective_chat.id
     user = Role.Verify(chat_id=chat_id)
-    hasil = user.listChat(chat_id=chat_id)
+    
+    if isinstance(user, Role.Admin):
+        hasil = user.listChat(chat_id=chat_id)
 
-    update.message.reply_text(text=f"Sorry, ths feature still under development")
+    elif isinstance(user, Role.User):
+        update.message.reply_text(text="Done, this chat has been unregistered from token.\n You will no longer receive bot update")
+
     #update.message.reply_text(text=f"{hasil[0]}\n. Klik tombol dibawah buat unregister chatnya", parse_mode=ParseMode.HTML, reply_markup=hasil[1])
 
 def unregtoken_handler(update, context):
