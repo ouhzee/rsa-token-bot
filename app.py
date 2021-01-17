@@ -2,7 +2,13 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, ChatAct
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, CallbackContext, ConversationHandler
 from telegram.utils import helpers
 from functools import wraps
-import Role, messageformat, logging, re, dbhelper, configparser
+from configparser import ConfigParser
+import Role, messageformat, logging, re, dbhelper
+
+parser = ConfigParser()
+parser.read("config/bot.ini")
+bot_token = parser.get("bot", "token")
+parser.clear()
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
@@ -211,7 +217,8 @@ def buttonPressedUser(update, context):
         if update.effective_chat.type == 'private':
             print("masuk dalam if private")
             approvebutton = messageformat.buttonFromOwner(userchat_id=chat_id, chat_name=from_requestor, owner_id=ownerchat[0])
-            print(f'approvebutton sudah assigned, ini owner_id {owner_id}')
+            print(f'approvebutton sudah assigned, ini owner_id {owner_id}, ini approvedbutton {approvebutton}')
+
             context.bot.send_message(chat_id=owner_id, text=f"@{from_user} {from_requestor} want to register their chat with your token.\n\n Approve?", reply_markup=approvebutton, parse_mode=ParseMode.HTML)
             print('context bot buat ngirim ke owner')
             
@@ -300,7 +307,7 @@ def buttonPressedNotify(update, context):
 
 def addgroup_handler(update, context):
     if update.message.new_chat_members[0].id == context.bot.get_me().id:
-        update.message.reply_text(text=f"Hi, thankyou for adding me to your group.\n\nThere are three basic cmd, you can access it by clicking forwardslash(/) next to emoji icon below")
+        update.message.reply_text(text=f"Hi, thankyou for adding me to your group.\n\nThere are three basic cmd, you can access it by clicking forwardslash<code>(/)</code> next to emoji icon below")
 
 ###DEBUG###
 def check_handler(update, context):
@@ -311,24 +318,37 @@ def check_handler(update, context):
 
 
 ###OWNER HANDLER###
-def listchat_handler(update, context):
+def listchat_handler(update, context, unreg=False):
     chat_id = update.effective_chat.id
     user = Role.Verify(chat_id=chat_id)
-    hasil = user.listChat(chat_id=chat_id)
+    listchat, markupchat = user.listChat(chat_id=chat_id)
 
-    update.message.reply_text(text=f"Ini list chat yang udah approved \n{hasil}\n Kalo mau unreg chatnya, klik /unregchat", parse_mode=ParseMode.HTML)
+    if unreg:
+        update.message.reply_text(text=f"Ini list chat yang udah approved \n{listchat}\n <b>Klik button di bawah buat unreg chat yang lu approve boss.</b>", reply_markup=markupchat,parse_mode=ParseMode.HTML)
+    else:
+        update.message.reply_text(text=f"Ini list chat yang udah approved \n{listchat}\n Kalo mau unreg chatnya, klik /unregchat", parse_mode=ParseMode.HTML)
+    
+    return
+
 
 def unregchat_handler(update,context):
     chat_id = update.effective_chat.id
-    user = Role.Verify(chat_id=chat_id)
+    user = Role.Verify(chat_id=chat_id).currentRole
+    print("ini tipe instance user >> {}".format(type(user)))
     
-    if isinstance(user, Role.Admin):
-        hasil = user.listChat(chat_id=chat_id)
+    if isinstance(user, Role.Owner):
+        listchat_handler(update=update, context=context, unreg=True)
 
     elif isinstance(user, Role.User):
-        update.message.reply_text(text="Done, this chat has been unregistered from token.\n You will no longer receive bot update")
-
+        print("masu isinstance user role")
+        if user.unregChat(chat_id=chat_id):
+            update.message.reply_text(text="Done, this chat has been unregistered from token.\n You will no longer receive bot update")
+            
+        else:
+            update.message.reply_text(text="This chat isn't registered to any token yet")
+    return
     #update.message.reply_text(text=f"{hasil[0]}\n. Klik tombol dibawah buat unregister chatnya", parse_mode=ParseMode.HTML, reply_markup=hasil[1])
+
 
 def unregtoken_handler(update, context):
     chat_id = update.effective_chat.id
@@ -343,10 +363,10 @@ def buttonPressedOwner(update, context):
     user = Role.Verify(chat_id=chat_id)
     #if user unregchat
     if re.match(r"unregchat(.*)", callbackdata):
-        userchat_id = re.findall(r"unregchat(.*)")[0]
+        userchat_id = re.findall(r"unregchat(.*)", callbackdata)[0]
         user.unregChat(userchat_id)
         update.callback_query.edit_message_reply_markup(reply_markup=None)
-        update.message.reply_text(text=f"Done, those chat/group were deleted")
+        update.callback_query.message.reply_text(text=f"Done, those chat/group were deleted")
     #if owner klik approve button
     elif re.match(r"insert.*", callbackdata):
         #extract callbackdata from format "insertUserchat_id,chat_name,owner_id"
@@ -369,7 +389,7 @@ def buttonPressedOwner(update, context):
 
 def main()->None:
 
-    updater = Updater('624508206:AAHnjG3k116QaM8UW1pRELGwqUWAJ3ukipo', use_context=True)
+    updater = Updater(bot_token, use_context=True)
     dispatcher = updater.dispatcher
 
     conv_handler = ConversationHandler(

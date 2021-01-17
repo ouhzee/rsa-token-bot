@@ -131,13 +131,16 @@ class Database:
             self.connect.commit()
 
     def delUser(self, chat_id):
-        try:
-            query = '''delete from "user" where chat_id = ?'''
-            self.connect.ececute(query, (chat_id,))
-            return
-        except sqlite3.Error as e:
-            print(e)
-            return False
+        #try:
+        query = '''delete from "user" where chat_id = ?'''
+        print("ini chat_id yg mau di unregchat {}".format(chat_id))
+        
+        self.connect.execute(query, [chat_id])
+        self.connect.commit()
+        return True
+        """except Exception as err:
+            print(err)
+            return False"""
 
         
 

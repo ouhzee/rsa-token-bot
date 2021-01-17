@@ -154,7 +154,7 @@ class Owner(Role):
         db = Database()
         db.connection()
         hasil = messageformat.parsingList(db.getUser(chat_id=chat_id))
-        return hasil[0]
+        return hasil
 
 
     def unregToken(self, chat_id:int):
@@ -171,7 +171,7 @@ class Owner(Role):
         '''
         db = Database()
         db.connection()
-        db.delUser(chat_id=chat_id)
+        return db.delUser(chat_id=chat_id)
         
 
 
@@ -220,12 +220,15 @@ class Verify():
         if isadmin:
             self.currentRole = Admin()
             print("jadi admin")
+            
         elif isowner:
             self.currentRole = Owner()
             print("jadi owner")
+            
         else:
             self.currentRole = User()
             print("jadi user")
+            
 
     ###USER###
     def menu(self)-> str:

@@ -59,8 +59,6 @@ def parsingGetOwner(hasilquery):
     #convert hasilquery [('token', 'namauser', 'nama tim'), ('token', 'namauser', 'nama tim')] to dict {'grup': {'token': 'owner', 'token': 'owner'}}
     for i in hasilquery:                
 
-        
-
         if i[2] not in groupdict:
             groupdict[i[2]] = {}
             
