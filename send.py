@@ -1,17 +1,69 @@
 from telegram.ext import Updater
 from telegram import ParseMode
+from configparser import ConfigParser
+from dbhelper import Database
+import argparse
 
-updater = Updater(token='624508206:AAHnjG3k116QaM8UW1pRELGwqUWAJ3ukipo', use_context=True)
+argparser = argparse.ArgumentParser(description="Example list arg", add_help=True)
+
+parser = ConfigParser()
+parser.read("config/bot.ini")
+bot_token = parser.get("bot","token")
+parser.clear()
+updater = Updater(token=bot_token, use_context=True)
 dispatcher = updater.dispatcher
 
-#dispatcher.bot.send_message(chat_id=-1001124606422, text="tolong colokno adzin. this is passive message")
 
-with open('whitelist.txt', 'r') as w:
-	line = w.read();
-	WHITELIST = [int(i) for i in line.split()]
-	for i in WHITELIST:
-		
-		dispatcher.bot.send_message(chat_id=i, text="Hi, bot new feature added.\nIt can now able to take multiple token to be imported to this bot.\n\nInvoke /start to try it.\n\nBisa baca disini ya pak /about")
-		dispatcher.bot.send_sticker(chat_id=i, sticker="CAACAgUAAxkBAAIE31_DmQNT1CFcKYQVayyOmnuFJM_1AAIwAAP6nYY8U_ofj-2ek30eBA")
-		"""dispatcher.bot.send_message(chat_id=i, text="Hi, there will be update coming out and it'll take aproximately about 10-20 minutes at 20:00.\n\nBot will ignore any command during that timeframe", parse_mode=ParseMode.HTML)"""
+def notifMaintenance():
+	parser.read("config/message.ini")
+	
+	
+	msg = parser.get("bot","notifMaintenance")
+	#msg.replace('\\n','\n')
+	sticker = parser.get("bot","notifMaintenanceSticker")
+	parser.clear()
+	db = Database()
+	db.connection()
+	print(msg)
+	listchat_id = db.getAllUserOwner()
+	print(listchat_id)
+	#send message
+	
+	for i in listchat_id:
+		dispatcher.bot.send_message(chat_id=i, text=msg, parse_mode=ParseMode.HTML)
+		dispatcher.bot.send_sticker(chat_id=i, sticker=sticker)
+	
 
+def notifUpdate():
+	parser.read("config/message.ini")
+	msg = parser.get("bot","notifUpdate")
+	sticker = parser.get("bot","notifUpdateSticker")
+	parser.clear()
+	db = Database()
+	db.connection()
+
+	listchat_id = db.getAllUserOwner()
+
+	#send message
+	#send message
+	for i in listchat_id:
+		dispatcher.bot.send_message(chat_id=i, text=msg)
+		dispatcher.bot.send_sticker(chat_id=i, sticker=sticker)
+
+def tesFunc():
+	print("ini tesfunct()")
+
+
+def main():
+
+	argparser.add_argument('-u', '--update', dest='command', action='store_const', const='notifupdate', help='Send message new feature added')
+	argparser.add_argument('-m', '--maintenance', dest='command', action='store_const',const='notifmaintenance', help='Send Maintenance Message and sticker')
+	args = argparser.parse_args()
+
+	if args.command == 'notifupdate':
+		notifUpdate()
+	elif args.command == 'notifmaintenance':
+		notifMaintenance()
+
+if __name__ == '__main__':
+	main()

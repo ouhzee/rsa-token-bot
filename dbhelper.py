@@ -5,7 +5,7 @@ class Database:
     
     def __init__(self):
         self.connect = None
-        self.dbFile = "rsatoken.db"
+        self.dbFile = "db/rsatoken.db"
 
     def connection(self):
         try:
@@ -192,3 +192,14 @@ class Database:
         #convert into list
         hasil = [i for y in hasilquery for i in y]
         return hasil
+
+    #For notification message in send.py
+    def getAllUserOwner(self):
+#        cur = self.connect.cursor()
+        query = '''select chat_id from owner UNION ALL SELECT chat_id FROM user WHERE chat_id NOT in (select chat_id from owner)'''
+
+        cur = self.connect.cursor()
+        cur.execute(query)
+        #convert into list
+        result = [i for y in cur.fetchall() for i in y]
+        return result
