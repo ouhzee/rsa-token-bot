@@ -18,6 +18,12 @@ tomybot = 'to-my-bot'
 
 TOKEN, USERNAME, SETPIN, GRUP, IMPORTTOKEN = range(5)
 
+def open_message(section:str, option:str)->str:
+    parser.read("config/message.ini")
+    msg = parser.get(section, option)
+    parser.clear()
+    return msg
+
 def send_action(action):
     
     def decorator(func):
@@ -58,14 +64,13 @@ def importToken(update, context):
     print(type(grup))
     user.registerToken(chat_id=chat_id, chat_name=chat_name, username=username, setpin=setpin, team_name=grup, token=url, sdtid=sdtid)
     
-    update.message.reply_text(text=f'done, {username} to {grup} imported.\n\n Now you can register your this chat or group chat to your corresponding token.\n')
+    msg = open_message("user","importtoken")
+    #update.message.reply_text(text=f'done, {username} to {grup} imported.\n\n Now you can register your this chat or group chat to your corresponding token.\n')
+    update.message.reply_text(text=msg.format(username, grup))
     return ConversationHandler.END
 
 
-def conv_token(update, context):
-    
-    reply = "Great, now please provide username that'll be used to login with this token (not telegram username).\n\n<b>Please don't contain any spaces.</b>\n\n Click /cancel to cancel"
-    
+def conv_token(update, context):    
 
     #check if sdtid is sent
     if update.message.document:
@@ -74,45 +79,55 @@ def conv_token(update, context):
         print(update.message.document.mime_type)
         
         if document.mime_type == 'application/xml' and re.match(r".*sdtid",document.file_name):
-
+            msg = open_message("user","convtoken")
             context.user_data['file'] = context.bot.getFile(update.message.document.file_id)
             
-            update.effective_message.reply_text(text=f"{reply}", parse_mode=ParseMode.HTML)
+            update.effective_message.reply_text(text=msg, parse_mode=ParseMode.HTML)
             return USERNAME
 
         else:
-            update.message.reply_text(text="File format not sdtid, please send again")
+            msg = open_message("user","convtokenfile")
+            update.message.reply_text(text=msg)
             return TOKEN
+
     elif re.match(r'http:\/\/127\.0\.0\.1\/securid.*', update.message.text):
+        
         context.user_data['url'] = update.message.text
-        update.message.reply_text(text=f"{reply}", parse_mode=ParseMode.HTML)
+        msg = open_message("user","convtoken")
+        update.message.reply_text(text=msg, parse_mode=ParseMode.HTML)
         return USERNAME
+
     else:
-        update.message.reply_text(text="i don't understand url you were given, please send again")
+        msg = open_message("user", "convtokenurl")
+        update.message.reply_text(text=msg)
         return TOKEN
 
 
 def conv_username(update, context):
     
     context.user_data['username'] = update.message.text
-    reply = "Okay, next one is pin of your token.\n\n<b>Remember, don't contain any spaces.</b>\n\n Click /cancel to cancel"
+    msg = open_message("user","convusername")
 
-    update.message.reply_text(text=f"{reply}", parse_mode=ParseMode.HTML)
+    update.message.reply_text(text=msg, parse_mode=ParseMode.HTML)
     return SETPIN
 
 def conv_setpin(update, context):
     context.user_data['setpin'] = update.message.text
     listgrup = Role.Role.listToken()
-    reply = "Terakhir bos, pilih team/grup di bawah.\nCopy / sentuh(kalo pake hp auto copied) nama tim dibawah, paste terus kirim.\n\n<b>Nama timnya aja, gaperlu</b> <code>|- username namaowner</code>\n"
+    msg = open_message("user","convsetpin")
 
-    update.message.reply_text(text=f"{reply}{listgrup[1]}\n\n<b>Kalo list diatas gaada, kirimin aja nama tim/dept nya nanti dibuatkan yang baru</b>\n\n Click /cancel to cancel", parse_mode=ParseMode.HTML)
+    #update.message.reply_text(text=f"{reply}{listgrup[1]}\n\n<b>Kalo list diatas gaada, kirimin aja nama tim/dept nya nanti dibuatkan yang baru</b>\n\n Click /cancel to cancel", parse_mode=ParseMode.HTML)
+    update.message.reply_text(text=msg.format(listgrup[1]), parse_mode=ParseMode.HTML)
 
     return GRUP
 
 def conv_grup(update, context):
     context.user_data['grup'] = update.message.text
     reply = "confirm your token information"
-    update.message.reply_text(text=f"type <b>okay</b> to {reply}.\n\nUse /cancel to cancel", parse_mode=ParseMode.HTML)
+    msg = open_message("user","convgrup")
+    
+    #update.message.reply_text(text=f"type <b>okay</b> to {reply}.\n\nUse /cancel to cancel", parse_mode=ParseMode.HTML)
+    update.message.reply_text(text=msg, parse_mode=ParseMode.HTML)
     return IMPORTTOKEN
 
 @send_action(ChatAction.TYPING)
@@ -125,8 +140,8 @@ def registerchat_handler(update, context):
     hasil = role.listToken()
     keyboardmarkup = hasil[0]
     teks = hasil[1]
-
-    update.message.reply_text(text=f"Choose one of these token by pressing the menu below.\n<code>{teks}</code>", reply_markup=keyboardmarkup,parse_mode=ParseMode.HTML)
+    msg = open_message("alluser", "registerchat")
+    update.message.reply_text(text=msg.format(teks), reply_markup=keyboardmarkup,parse_mode=ParseMode.HTML)
 
 @send_action(ChatAction.TYPING)
 def listtoken_handler(update, context):
@@ -136,8 +151,10 @@ def listtoken_handler(update, context):
     messageformat.groupdict = {}
     messageformat.markupdept = {}
     keyboard, teks = role.listToken()
+    msg = open_message("alluser","listtoken")
 
-    update.message.reply_text(text=f"Token registered to this bot.\n<code>{teks}</code>", parse_mode=ParseMode.HTML)
+    #update.message.reply_text(text=f"Token registered to this bot.\n<code>{teks}</code>", parse_mode=ParseMode.HTML)
+    update.message.reply_text(text=msg.format(teks), parse_mode=ParseMode.HTML)
 
 def reqtoken_handler(update, context):
     chat_id = update.effective_chat.id
@@ -148,6 +165,7 @@ def reqtoken_handler(update, context):
         passcode = hasilpasscode[0]
         username = hasilpasscode[1]
         button = []
+        msg = open_message("user","reqtoken")
         #create dict for button
         buttondict = {'next60': 'next 60s', 'next3600': 'next 1h', 'next7200': 'next 2h', 'next14400': 'next 4h'}
         
@@ -159,13 +177,17 @@ def reqtoken_handler(update, context):
                 )
         buttonmarkup = InlineKeyboardMarkup(messageformat.buildButton(button, 2))
 
-        update.message.reply_text(text=f"<code>username: {username}</code>\nHere is the passcode <code>{passcode}</code>", parse_mode=ParseMode.HTML, reply_markup=buttonmarkup)
+        #update.message.reply_text(text=f"<code>username: {username}</code>\nHere is the passcode <code>{passcode}</code>", parse_mode=ParseMode.HTML, reply_markup=buttonmarkup)
+        update.message.reply_text(text=msg.format(username, passcode), parse_mode=ParseMode.HTML, reply_markup=buttonmarkup)
     else:
-        update.message.reply_text(text=f"Sorry, this chat/group does not belong to any token.\n please register by clicking this /registerchat", parse_mode=ParseMode.HTML)
+        msg = open_message("user","reqtokennotreg")
+        #update.message.reply_text(text=f"Sorry, this chat/group does not belong to any token.\n please register by clicking this /registerchat", parse_mode=ParseMode.HTML)
+        update.message.reply_text(text=msg, parse_mode=ParseMode.HTML)
 
 def about_handler(update, context):
-    teks = "Hi, thankyou for using this bot.\n\nYou can read the tutorial below.\n<a href='https://telegra.ph/RSA-Token-Telegram-Bot-01-21'>Click Here</a> or instant view on the phone.\n\nTanya2 pake /askadmin.\nList cmd yg gaada di pojok, pake /start\n\n<code>made by zee with 🐍</code>\n\n."
-    update.message.reply_text(text=teks, parse_mode=ParseMode.HTML)
+    #teks = "Hi, thankyou for using this bot.\n\nYou can read the tutorial below.\n<a href='https://telegra.ph/RSA-Token-Telegram-Bot-01-21'>Click Here</a> or instant view on the phone.\n\nTanya2 pake /askadmin.\nList cmd yg gaada di pojok, pake /start\n\n<code>made by zee with 🐍</code>\n\n."
+    msg = open_message("alluser","about")
+    update.message.reply_text(text=msg, parse_mode=ParseMode.HTML)
 
 
 def buttonPressedNext(update, context):
@@ -175,12 +197,14 @@ def buttonPressedNext(update, context):
     callbackdata = query.data
     from_userfirstname = query.from_user.first_name
     nexttoken = int(re.findall(r"next(.*)", callbackdata)[0])
+    msg = open_message("user","reqtokennext")
     
     user = Role.Verify(chat_id)
     passcode, waktu, username = user.reqPasscode(chat_id, nexttoken)
 
     query.edit_message_reply_markup(reply_markup=None)
-    query.message.reply_text(text=f"<code>username: {username}</code>\n{from_userfirstname} here is your passcode:\n\n<code>{passcode}active until {waktu}</code>", parse_mode=ParseMode.HTML)
+    #query.message.reply_text(text=f"<code>username: {username}</code>\n{from_userfirstname} here is your passcode:\n\n<code>{passcode}active until {waktu}</code>", parse_mode=ParseMode.HTML)
+    query.message.reply_text(text=msg.format(username, from_userfirstname, passcode, waktu), parse_mode=ParseMode.HTML)
 
 def buttonPressedUser(update, context):
     query = update.callback_query
@@ -215,22 +239,29 @@ def buttonPressedUser(update, context):
         #send notif to owner
         #if coming from private
         if update.effective_chat.type == 'private':
+            msg = open_message("owner","reqapprovalchat")
             print("masuk dalam if private")
             approvebutton = messageformat.buttonFromOwner(userchat_id=chat_id, chat_name=from_requestor, owner_id=ownerchat[0])
             print(f'approvebutton sudah assigned, ini owner_id {owner_id}, ini approvedbutton {approvebutton}')
 
-            context.bot.send_message(chat_id=owner_id, text=f"@{from_user} {from_requestor} want to register their chat with your token.\n\n Approve?", reply_markup=approvebutton, parse_mode=ParseMode.HTML)
+            #context.bot.send_message(chat_id=owner_id, text=f"@{from_user} {from_requestor} want to register their chat with your token.\n\n Approve?", reply_markup=approvebutton, parse_mode=ParseMode.HTML)
+            context.bot.send_message(chat_id=owner_id, text=msg.format(from_user, from_requestor), reply_markup=approvebutton, parse_mode=ParseMode.HTML)
             print('context bot buat ngirim ke owner')
             
         #if coming from group/supergroup
         else:
             approvebutton = messageformat.buttonFromOwner(userchat_id=chat_id, chat_name=chat_title, owner_id=ownerchat[0])
-            context.bot.send_message(chat_id=ownerchat[0], text=f"@{from_user} {from_requestor} want to register their group {chat_title} with your token.\n\n Approve?", reply_markup=approvebutton, parse_mode=ParseMode.HTML)
+            msg = open_message("owner","reqapprovalgroup")
+
+            #context.bot.send_message(chat_id=ownerchat[0], text=f"@{from_user} {from_requestor} want to register their group {chat_title} with your token.\n\n Approve?", reply_markup=approvebutton, parse_mode=ParseMode.HTML)
+            context.bot.send_message(chat_id=ownerchat[0], text=msg.format(from_user,from_requestor,chat_title), reply_markup=approvebutton, parse_mode=ParseMode.HTML)
 
         #send message to requestor
         print('notif ke requestor')
         query.edit_message_reply_markup(reply_markup=None)
-        query.message.reply_text(text=f'your request has been sent to {ownerchat[1]}.\nIn addition, please contact the owner')
+        msg = open_message("user","requestor")
+        query.message.reply_text(text=msg.format(ownerchat[1]))
+        #query.message.reply_text(text=f'your request has been sent to {ownerchat[1]}.\nIn addition, please contact the owner')
 
         #clear groupdict and button
         messageformat.groupdict = {}
@@ -266,17 +297,23 @@ def registertoken_handler(update, context):
     #check if its group/private chat
     if update.effective_chat.type != 'private':
         print('grup')
-        update.message.reply_text(text="Sorry, register token not supported for group type.\nPlease invoke this cmd inside private chat, click button below", reply_markup=buttonmarkup)
+        msg = open_message("user","regtokengroup")
+        #update.message.reply_text(text="Sorry, register token not supported for group type.\nPlease invoke this cmd inside private chat, click button below", reply_markup=buttonmarkup)
+        update.message.reply_text(text=msg, reply_markup=buttonmarkup)
         return ConversationHandler.END
     
     else:
         db = dbhelper.Database()
         db.connection()
         if db.getOwner(chat_id=chat_id):
-            update.message.reply_text(text=f"You have already imported your token.\n\nIf you want to change it, please unregister first then register it again", parse_mode=ParseMode.HTML)
+            msg = open_message("owner","regtoken")
+            #update.message.reply_text(text=f"You have already imported your token.\n\nIf you want to change it, please unregister first then register it again", parse_mode=ParseMode.HTML)
+            update.message.reply_text(text=msg, parse_mode=ParseMode.HTML)
             return ConversationHandler.END
         else:
-            update.message.reply_text(text=f"Hi, Please send me your <b>.sdtid</b> file\n\nor url token that look like this \n<code>http://127.0.0.1/securidxxxxx</code>\n\n Click /cancel to cancel", parse_mode=ParseMode.HTML)
+            msg = open_message("user","regtoken")
+            #update.message.reply_text(text=f"Hi, Please send me your <b>.sdtid</b> file\n\nor url token that look like this \n<code>http://127.0.0.1/securidxxxxx</code>\n\n Click /cancel to cancel", parse_mode=ParseMode.HTML)
+            update.message.reply_text(text=msg, parse_mode=ParseMode.HTML)
             return TOKEN
 
 
@@ -287,27 +324,37 @@ def conv_cancel(update, context):
 
 def askAdmin_handler(update, context):
     buttonmarkup = InlineKeyboardMarkup.from_button(InlineKeyboardButton(text="Yes", callback_data='notifyadmin'))
-
-    update.message.reply_text(text=f'You want to chat with admin?\n\nThis will notify admin and reply your message', reply_markup=buttonmarkup)
+    msg = open_message("alluser","askadmin")
+    
+    #update.message.reply_text(text=f'You want to chat with admin?\n\nThis will notify admin and reply your message', reply_markup=buttonmarkup)
+    update.message.reply_text(text=msg, reply_markup=buttonmarkup)
 
 def buttonPressedNotify(update, context):
     name = update.callback_query.from_user.first_name
     username = update.callback_query.from_user.username
     chat_title = update.callback_query.message.chat.title
+    
     if update.effective_chat.type != 'private':
+        msg = open_message("alluser","notifyadmingroup")
         url = helpers.create_deep_linked_url(context.bot.get_me().username)
         buttonmarkup = InlineKeyboardMarkup.from_button(InlineKeyboardButton(text="Start chat", url=url))
+        
         context.bot.send_message(chat_id=166942761 ,text=f'Manggil bos\nGroup: {chat_title}\nFrom: {name} @{username}.')
         update.callback_query.edit_message_reply_markup(reply_markup=None)
-        update.callback_query.message.reply_text(text="Admin has been notified, please wait.\n\nPlease issue /start on the button below to initiate conversation with admin.\nIf you have done this before, it's not necessary.", reply_markup=buttonmarkup)
+        #update.callback_query.message.reply_text(text="Admin has been notified, please wait.\n\nPlease issue /start on the button below to initiate conversation with admin.\nIf you have done this before, it's not necessary.", reply_markup=buttonmarkup)
+        update.callback_query.message.reply_text(text=msg, reply_markup=buttonmarkup)
     else:
+        msg = open_message("alluser","notifyadmin")
         context.bot.send_message(chat_id=166942761 ,text=f'Manggil bos\nGroup: {chat_title}\nFrom: {name} @{username}.')
         update.callback_query.edit_message_reply_markup(reply_markup=None)
-        update.callback_query.message.reply_text(text="Admin has been notified, please wait.")
+        #update.callback_query.message.reply_text(text="Admin has been notified, please wait.")
+        update.callback_query.message.reply_text(text=msg)
 
 def addgroup_handler(update, context):
     if update.message.new_chat_members[0].id == context.bot.get_me().id:
-        update.message.reply_text(text=f"Hi, thankyou for adding me to your group.\n\nThere are three basic cmd, you can access it by clicking forwardslash<code>(/)</code> next to emoji icon below")
+        msg = open_message("alluser","addgroup")
+        #update.message.reply_text(text=f"Hi, thankyou for adding me to your group.\n\nThere are three basic cmd, you can access it by clicking forwardslash<code>(/)</code> next to emoji icon below")
+        update.message.reply_text(text=msg)
 
 ###DEBUG###
 def check_handler(update, context):
@@ -322,11 +369,16 @@ def listchat_handler(update, context, unreg=False):
     chat_id = update.effective_chat.id
     user = Role.Verify(chat_id=chat_id)
     listchat, markupchat = user.listChat(chat_id=chat_id)
+    print(listchat)
 
     if unreg:
-        update.message.reply_text(text=f"Ini list chat yang udah approved \n{listchat}\n <b>Klik button di bawah buat unreg chat yang lu approve boss.</b>", reply_markup=markupchat,parse_mode=ParseMode.HTML)
+        #update.message.reply_text(text=f"Ini list chat yang udah approved \n{listchat}\n <b>Klik button di bawah buat unreg chat yang lu approve boss.</b>", reply_markup=markupchat,parse_mode=ParseMode.HTML)
+        msg = open_message("owner","listchatunreg")
+        update.message.reply_text(text=msg.format(listchat), reply_markup=markupchat,parse_mode=ParseMode.HTML)
     else:
-        update.message.reply_text(text=f"Ini list chat yang udah approved \n{listchat}\n Kalo mau unreg chatnya, klik /unregchat", parse_mode=ParseMode.HTML)
+        #update.message.reply_text(text=f"Ini list chat yang udah approved \n{listchat}\n Kalo mau unreg chatnya, klik /unregchat", parse_mode=ParseMode.HTML)
+        msg = open_message("owner","listchat")
+        update.message.reply_text(text=msg.format(listchat), parse_mode=ParseMode.HTML)
     
     return
 
@@ -342,10 +394,14 @@ def unregchat_handler(update,context):
     elif isinstance(user, Role.User):
         print("masu isinstance user role")
         if user.unregChat(chat_id=chat_id):
-            update.message.reply_text(text="Done, this chat has been unregistered from token.\n You will no longer receive bot update")
+            msg = open_message("user","unregchat")
+            #update.message.reply_text(text="Done, this chat has been unregistered from token.\n You will no longer receive bot update")
+            update.message.reply_text(text=msg)
             
         else:
-            update.message.reply_text(text="This chat isn't registered to any token yet")
+            msg = open_message("user","unregtokennotreg")
+            #update.message.reply_text(text="This chat isn't registered to any token yet")
+            update.message.reply_text(text=msg)
     return
     #update.message.reply_text(text=f"{hasil[0]}\n. Klik tombol dibawah buat unregister chatnya", parse_mode=ParseMode.HTML, reply_markup=hasil[1])
 
@@ -354,7 +410,10 @@ def unregtoken_handler(update, context):
     chat_id = update.effective_chat.id
     user = Role.Verify(chat_id=chat_id)
     user.unregToken(chat_id=chat_id)
-    update.message.reply_text(text=f"Done, your token has been unregistered.\nYou could always import it again using /registertoken")
+    msg = open_message("owner","unregtoken")
+    
+    #update.message.reply_text(text=f"Done, your token has been unregistered.\nYou could always import it again using /registertoken")
+    update.message.reply_text(text=msg)
 
 def buttonPressedOwner(update, context):
     query = update.callback_query
@@ -364,9 +423,11 @@ def buttonPressedOwner(update, context):
     #if user unregchat
     if re.match(r"unregchat(.*)", callbackdata):
         userchat_id = re.findall(r"unregchat(.*)", callbackdata)[0]
+        msg = open_message("owner","unregchat")
         user.unregChat(userchat_id)
         update.callback_query.edit_message_reply_markup(reply_markup=None)
-        update.callback_query.message.reply_text(text=f"Done, those chat/group were deleted")
+        #update.callback_query.message.reply_text(text=f"Done, those chat/group were deleted")
+        update.callback_query.message.reply_text(text=msg)
     #if owner klik approve button
     elif re.match(r"insert.*", callbackdata):
         #extract callbackdata from format "insertUserchat_id,chat_name,owner_id"
@@ -376,14 +437,19 @@ def buttonPressedOwner(update, context):
         userchat_id = hasildatachat[0]
         userchat_name = hasildatachat[1]
         owner_id = hasildatachat[2]
+        msgowner = open_message("owner","approvedchat")
+        msgrequestor = open_message("user","requestornotify")
 
         #insert to db
         user = Role.Verify(userchat_id)
         user.registerChat(userchat_id, userchat_name, owner_id)
         query.edit_message_reply_markup(reply_markup=None)
-        query.message.reply_text(text=f'Done, those chat has been registered to your token.\nYou can unregister by /unregchat', parse_mode=ParseMode.HTML)
+        #query.message.reply_text(text=f'Done, those chat has been registered to your token.\nYou can unregister by /unregchat', parse_mode=ParseMode.HTML)
+        query.message.reply_text(text=msgowner, parse_mode=ParseMode.HTML)
 
-        context.bot.send_message(chat_id=userchat_id, text=f"Owner has approved this chat.\n\nYou can invoke /token or just send text containing <code>token</code>.", parse_mode=ParseMode.HTML)
+        #send notif to requestor
+        context.bot.send_message(chat_id=userchat_id, text=msgrequestor, parse_mode=ParseMode.HTML)
+        #context.bot.send_message(chat_id=userchat_id, text=f"Owner has approved this chat.\n\nYou can invoke /token or just send text containing <code>token</code>.", parse_mode=ParseMode.HTML)
     
     
 

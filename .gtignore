@@ -1,0 +1,4 @@
+*.log
+rcfile/
+db/
+sdtid/

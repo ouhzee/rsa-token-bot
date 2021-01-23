@@ -4,7 +4,15 @@ import os, messageformat
 from dbhelper import Database
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from datetime import datetime, timedelta
+from configparser import ConfigParser
 
+parser = ConfigParser()
+
+def open_message(section:str, option:str)->str:
+    parser.read("config/message.ini")
+    msg = parser.get(section, option)
+    parser.clear()
+    return msg
 
 class Role(ABC):
 
@@ -130,22 +138,9 @@ class Admin(Role):
 
 class Owner(Role):
     def menu(self)->str:
-        teks = """
-        Please type click one of the command below.
-
-/token<code>       - req passcode.</code>
-/registertoken<code> - register/import token to bot.</code>
-/registerchat<code>  - register current chat/group.</code>
-/listtoken<code>     - list available token</code>
-/listchat<code>      - list of your approved chat.</code>
-/unregtoken<code>  - delete your token.</code>
-/unregchat<code>   - unregister approved chat/group.</code>
-
-/askadmin<code>    - chat with admin.</code>
-/about<code>       - Tutorial</code>
         
-        """
-        return teks
+        msg = open_message("owner","menu")
+        return msg
 
     def listChat(self, chat_id):
         '''
@@ -177,19 +172,8 @@ class Owner(Role):
 
 class User(Role):
     def menu(self)->str:
-        teks = """
-        Please click one of the command below
-        
-/token<code>       - req passcode.</code>
-/registertoken<code> - register/import token to bot.</code>
-/registerchat<code>  - register current chat/group.</code>
-/listtoken<code>     - list available token</code>
-/unregchat<code>     - unreg this chat from token.</code>
-
-/askadmin<code>    - chat with admin.</code>
-/about<code>       - Tutorial</code>
-        """
-        return teks
+        msg = open_message("user","menu")
+        return msg
 
     def unregChat(self, chat_id):
         db = Database()
