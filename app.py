@@ -78,7 +78,7 @@ def conv_token(update, context):
         document = update.message.document
         print(update.message.document.mime_type)
         
-        if document.mime_type == 'application/xml' and re.match(r".*sdtid",document.file_name):
+        if document.mime_type == "application/xml" or document.mime_type == "application/octet-stream" and re.match(r".*sdtid",document.file_name):
             msg = open_message("user","convtoken")
             context.user_data['file'] = context.bot.getFile(update.message.document.file_id)
             
@@ -318,7 +318,7 @@ def registertoken_handler(update, context):
 
 
 def conv_cancel(update, context):
-    update.message.reply_text('Okay bye')
+    update.message.reply_text(open_message("alluser","cancel"))
 
     return ConversationHandler.END
 
@@ -451,7 +451,8 @@ def buttonPressedOwner(update, context):
         context.bot.send_message(chat_id=userchat_id, text=msgrequestor, parse_mode=ParseMode.HTML)
         #context.bot.send_message(chat_id=userchat_id, text=f"Owner has approved this chat.\n\nYou can invoke /token or just send text containing <code>token</code>.", parse_mode=ParseMode.HTML)
     
-    
+def ping_handler(update, context):
+	update.message.reply_text(text="pong 🏓")
 
 def main()->None:
 
@@ -477,6 +478,7 @@ def main()->None:
     dispatcher.add_handler(CommandHandler('registerchat', registerchat_handler))
     dispatcher.add_handler(CommandHandler('token', reqtoken_handler))
     dispatcher.add_handler(MessageHandler(Filters.regex(r'.*\stoken|^token|token\s.*'), reqtoken_handler))
+    dispatcher.add_handler(MessageHandler(Filters.regex(r'ping @wazxwskibot'), ping_handler))
     dispatcher.add_handler(CommandHandler('about', about_handler))
     dispatcher.add_handler(CallbackQueryHandler(buttonPressedNext, pattern='next'))
     #notify admin
