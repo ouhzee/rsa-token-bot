@@ -190,6 +190,11 @@ def about_handler(update, context):
     update.message.reply_text(text=msg, parse_mode=ParseMode.HTML)
 
 
+def donate_handler(update, context):
+    msg = open_message("alluser","donate")
+    update.message.reply_text(text=msg, parse_mode=ParseMode.HTML)
+
+
 def buttonPressedNext(update, context):
     query = update.callback_query
     chat_id = query.message.chat.id
@@ -487,6 +492,7 @@ def main()->None:
     dispatcher.add_handler(CommandHandler('listtoken', listtoken_handler))
     #if bot added to group
     dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, addgroup_handler))
+    dispatcher.add_handler(CommandHandler('donate', donate_handler))
 
 ###OWNER###
     dispatcher.add_handler(CommandHandler('listchat', listchat_handler))
