@@ -106,7 +106,7 @@ def backToMainMenu():
 
 def buttonFromOwner(userchat_id, chat_name, owner_id):
     #format callback data = insertchat_id,chat_name,to_owner
-    button = [InlineKeyboardButton(text=f"Click to approve", callback_data=f'insert{userchat_id},{chat_name},{owner_id}')]
+    button = [InlineKeyboardButton(text=f"✅ Approve", callback_data=f'insert{userchat_id},{chat_name},{owner_id}')]
     markupbutton = InlineKeyboardMarkup(buildButton(button, n_col=1))
     return markupbutton
 
