@@ -1,11 +1,16 @@
 import sqlite3
+from configparser import ConfigParser
 
+parser = ConfigParser()
+parser.read("config/bot.ini")
+dbpath = parser.get("bot", "dbpath")
+parser.clear()
 
 class Database:
     
     def __init__(self):
         self.connect = None
-        self.dbFile = "db/rsatoken.db"
+        self.dbFile = dbpath
 
     def connection(self):
         try:
